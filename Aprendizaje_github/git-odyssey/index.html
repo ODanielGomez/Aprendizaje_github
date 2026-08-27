@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07110f">
+  <title>Git Odyssey — Aprende Git jugando</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Git Odyssey, inicio">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M16 2 30 16 16 30 2 16 16 2Z"/><circle cx="11" cy="11" r="2.2"/><circle cx="21" cy="21" r="2.2"/><path d="m12.5 12.5 7 7M16 16v-5"/><circle cx="16" cy="9.5" r="2.2"/></svg>
+      </span>
+      <span>GIT <b>ODYSSEY</b></span>
+    </a>
+
+    <div class="top-stats" aria-label="Estadísticas del jugador">
+      <div class="stat"><span class="stat-icon">✦</span><strong id="xpValue">0</strong><small>XP</small></div>
+      <div class="stat"><span class="flame">◆</span><strong id="streakValue">0</strong><small>RACHA</small></div>
+      <button class="icon-button" id="soundButton" title="Activar o desactivar sonidos" aria-label="Activar o desactivar sonidos">♪</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="profile">
+        <div class="avatar">&gt;_</div>
+        <div>
+          <span class="eyebrow">RANGO ACTUAL</span>
+          <h2 id="rankName">Aprendiz</h2>
+        </div>
+      </div>
+
+      <div class="level-progress">
+        <div><span>Nivel <b id="levelValue">1</b></span><span id="levelXp">0 / 300 XP</span></div>
+        <div class="progress-track"><span id="levelBar"></span></div>
+      </div>
+
+      <nav class="chapters" aria-label="Capítulos">
+        <p class="nav-label">CAMPAÑA</p>
+        <button class="chapter active" data-chapter="0">
+          <span class="chapter-number">01</span>
+          <span><b>El despertar</b><small>Fundamentos</small></span>
+          <em id="chapterProgress0">0/4</em>
+        </button>
+        <button class="chapter" data-chapter="1">
+          <span class="chapter-number">02</span>
+          <span><b>Líneas del tiempo</b><small>Ramas y fusiones</small></span>
+          <em id="chapterProgress1">0/4</em>
+        </button>
+        <button class="chapter" data-chapter="2">
+          <span class="chapter-number">03</span>
+          <span><b>La red</b><small>Remotos y equipo</small></span>
+          <em id="chapterProgress2">0/4</em>
+        </button>
+        <button class="chapter" data-chapter="3">
+          <span class="chapter-number">04</span>
+          <span><b>Volver del vacío</b><small>Control y recuperación</small></span>
+          <em id="chapterProgress3">0/4</em>
+        </button>
+        <button class="chapter" data-chapter="4">
+          <span class="chapter-number">05</span>
+          <span><b>Cirugía temporal</b><small>Historia avanzada</small></span>
+          <em id="chapterProgress4">0/4</em>
+        </button>
+        <button class="chapter" data-chapter="5">
+          <span class="chapter-number">06</span>
+          <span><b>El núcleo de Git</b><small>Herramientas expertas</small></span>
+          <em id="chapterProgress5">0/4</em>
+        </button>
+      </nav>
+
+      <div class="sidebar-card">
+        <span class="tiny-orbit">◉</span>
+        <div><b>Zona de práctica</b><small>Experimenta sin perder XP</small></div>
+        <button class="command-guide-button" id="commandGuideButton">◇ Guía de comandos</button>
+        <button id="practiceButton">Abrir</button>
+        <button class="reset-progress" id="resetProgressButton">↻ Reiniciar progreso</button>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <div class="mission-header">
+        <button class="mobile-menu" id="menuButton" aria-label="Abrir menú">☰</button>
+        <div>
+          <span class="mission-kicker" id="missionKicker">CAPÍTULO 1 · MISIÓN 1</span>
+          <h1 id="missionTitle">Un nuevo comienzo</h1>
+          <p id="missionStory">Tu nave de código está vacía. Inicializa el repositorio que guardará cada cambio de esta aventura.</p>
+        </div>
+        <div class="mission-reward"><span>RECOMPENSA</span><b>+<i id="rewardValue">100</i> XP</b></div>
+      </div>
+
+      <nav class="level-navigation" aria-label="Navegación entre misiones">
+        <button id="previousMission">← Anterior</button>
+        <span id="missionPosition">Misión 1 de 24</span>
+        <button class="resume-mission" id="resumeMission" hidden>↗ Volver a mi progreso</button>
+        <button id="nextMission">Siguiente →</button>
+      </nav>
+
+      <div class="content-grid">
+        <article class="lesson-card">
+          <div class="card-label"><span>//</span> ARCHIVO DE MISIÓN</div>
+          <div class="lesson-body">
+            <div class="concept-icon" id="conceptIcon">◎</div>
+            <h2 id="conceptTitle">¿Qué es un repositorio?</h2>
+            <p id="conceptText">Es una carpeta cuyo historial Git puede observar. Aquí Git almacenará versiones, ramas y toda la historia de tu proyecto.</p>
+
+            <div class="intel-box">
+              <span>OBJETIVO</span>
+              <p id="objectiveText">Crea un repositorio Git en la carpeta actual.</p>
+            </div>
+
+            <div class="lesson-actions">
+              <button class="secondary-button" id="hintButton"><span>⌁</span> Solicitar pista</button>
+              <button class="text-button" id="theoryButton">Ver teoría <span>→</span></button>
+            </div>
+
+            <div class="hint-panel" id="hintPanel" hidden>
+              <b>PISTA DEL SISTEMA</b>
+              <p id="hintText"></p>
+            </div>
+          </div>
+        </article>
+
+        <section class="terminal-panel" aria-label="Terminal Git simulada">
+          <div class="terminal-top">
+            <div class="traffic"><i></i><i></i><i></i></div>
+            <span>odyssey — terminal</span>
+            <button id="resetTerminal" title="Reiniciar terminal" aria-label="Reiniciar terminal">↻</button>
+          </div>
+
+          <div class="terminal-output" id="terminalOutput" role="log" aria-live="polite">
+            <div class="boot-line">Git Odyssey Terminal v1.0</div>
+            <div class="muted-line">Escribe <strong>help</strong> para ver comandos disponibles.</div>
+            <div class="spacer"></div>
+          </div>
+
+          <form class="terminal-form" id="terminalForm" autocomplete="off">
+            <label for="terminalInput"><span class="prompt-path">~/odyssey</span> <span class="prompt-symbol">❯</span></label>
+            <input id="terminalInput" name="command" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus aria-label="Escribe un comando Git">
+            <button type="submit">EJECUTAR <span>↵</span></button>
+          </form>
+
+          <div class="terminal-footer">
+            <span><kbd>↑</kbd><kbd>↓</kbd> Historial</span>
+            <span><kbd>Tab</kbd> Autocompletar</span>
+            <span class="simulation-badge"><i></i> ENTORNO SEGURO</span>
+          </div>
+        </section>
+      </div>
+
+      <section class="repo-visualizer" aria-label="Visualizador del repositorio">
+        <div class="visualizer-head">
+          <div><span class="eyebrow">RADAR DEL REPOSITORIO</span><h2>Historia en tiempo real</h2></div>
+          <div class="repo-pills" id="repoPills"></div>
+        </div>
+        <div class="graph-shell">
+          <div class="graph-empty" id="graphEmpty"><span>⌁</span><p>Inicializa el repositorio y crea commits para ver aparecer su historia.</p></div>
+          <div class="commit-graph" id="commitGraph"></div>
+        </div>
+        <div class="graph-legend"><span><i class="legend-head"></i> HEAD</span><span><i class="legend-branch"></i> Rama</span><span><i class="legend-commit"></i> Commit</span><span id="graphSummary">0 commits · 1 rama</span></div>
+      </section>
+
+      <section class="mission-map">
+        <div class="map-heading">
+          <div><span class="eyebrow">RUTA DE APRENDIZAJE</span><h2 id="mapTitle">Capítulo 1 · El despertar</h2></div>
+          <span id="mapProgress">0% completado</span>
+        </div>
+        <div class="mission-nodes" id="missionNodes"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="modal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">×</button>
+      <span class="modal-icon" id="modalIcon">✓</span>
+      <span class="eyebrow" id="modalEyebrow">MISIÓN COMPLETADA</span>
+      <h2 id="modalTitle">Repositorio inicializado</h2>
+      <p id="modalText">Acabas de crear la cápsula donde vivirá la historia de tu proyecto.</p>
+      <div class="reward-pill" id="modalReward">+100 XP</div>
+      <button class="primary-button" id="modalAction">Siguiente misión <span>→</span></button>
+    </section>
+  </div>
+
+  <div class="wizard-backdrop" id="commandWizard" hidden>
+    <section class="command-wizard" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+      <header class="wizard-header">
+        <div><span class="eyebrow">MANUAL DE CAMPO</span><h2 id="guideTitle">Guía de comandos</h2></div>
+        <span class="wizard-counter" id="guideCounter">01 / 24</span>
+        <button id="guideClose" aria-label="Cerrar guía">×</button>
+      </header>
+      <div class="wizard-layout">
+        <aside class="command-index">
+          <label for="guideSearch">BUSCAR COMANDO</label>
+          <input id="guideSearch" type="search" placeholder="Ej. rebase" autocomplete="off">
+          <nav id="guideList" aria-label="Lista de comandos"></nav>
+        </aside>
+        <article class="guide-content">
+          <span class="guide-category" id="guideCategory">FUNDAMENTOS</span>
+          <h3 id="guideCommand">git init</h3>
+          <p class="guide-summary" id="guideSummary"></p>
+          <div class="guide-block"><span>SINTAXIS</span><code id="guideSyntax"></code></div>
+          <div class="guide-example">
+            <div><span>EJEMPLO FUERA DEL JUEGO</span><h4 id="guideExampleTitle"></h4></div>
+            <p id="guideExampleText"></p>
+            <pre><code id="guideExampleCode"></code></pre>
+          </div>
+          <div class="guide-note"><span>!</span><p id="guideNote"></p></div>
+          <footer class="wizard-actions">
+            <button id="guidePrev">← Anterior</button><div id="guideDots" aria-hidden="true"></div><button id="guideNext">Siguiente →</button>
+          </footer>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
