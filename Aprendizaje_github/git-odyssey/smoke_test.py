@@ -110,9 +110,18 @@ def main():
         driver.find_element(By.ID, "modalAction").click()
         assert driver.find_element(By.ID, "xpValue").text == "0"
         assert driver.find_element(By.ID, "streakValue").text == "0"
+        actions = driver.find_elements(By.CSS_SELECTOR, ".lab-action")
+        wrong_action = next(item for item in actions if item.text == "git push origin main")
+        driver.execute_script("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", wrong_action)
+        assert "TODAVÍA NO CORRESPONDE" in driver.find_element(By.ID, "labFeedback").text.upper()
+        for label in ["Editar interfaz.css", "git add interfaz.css", 'git commit -m "Mejora interfaz"']:
+            actions = driver.find_elements(By.CSS_SELECTOR, ".lab-action")
+            action = next(item for item in actions if item.text == label)
+            driver.execute_script("arguments[0].click();", action)
+        assert "CONCEPTO DOMINADO" in driver.find_element(By.ID, "masteryBadge").text.upper()
         submit(driver, "help")
         assert "reiniciar" in driver.find_element(By.ID, "terminalOutput").text
-        print("OK: 24 misiones, navegación, guía de remote, radar y reinicio validados.")
+        print("OK: campaña, navegación, guía, laboratorio visual y reinicio validados.")
 
 
 if __name__ == "__main__":

@@ -21,6 +21,8 @@ Después visita `http://localhost:8080`.
 - Fundamentos, staging, commits, ramas, merge, remotos, conflictos, rebase y recuperación.
 - `.gitignore`, `diff`, `restore`, `stash`, tags, `revert`, `reset`, `reflog`, `cherry-pick` y `bisect`.
 - Radar visual que representa commits, ramas, tags y la posición de `HEAD` en tiempo real.
+- Seis laboratorios interactivos con acciones arrastrables, diagramas dinámicos y retroalimentación explicativa.
+- Dominio conceptual guardado por separado del XP para permitir practicar sin bloquear la campaña.
 - Pistas, teoría, XP, niveles, rangos y progreso persistente con `localStorage`.
 - Diseño adaptable para escritorio y móvil.
 

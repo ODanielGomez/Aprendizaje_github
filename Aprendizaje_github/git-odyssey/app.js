@@ -286,6 +286,15 @@ const commandGuide = [
 
 const missionGuideMap = [0,2,3,4,8,9,4,10,11,12,13,14,3,5,6,15,16,17,18,19,20,21,22,10];
 
+const learningLabs = [
+  { title:"La ruta de un cambio", type:"Ordena el flujo", scenario:"Una diseñadora termina una mejora. Lleva el archivo desde su carpeta de trabajo hasta el historial de Git.", nodes:[["✎","Working tree","Cambio local"],["+","Staging","Cambio elegido"],["●","Repositorio","Historia guardada"]], steps:[["Editar interfaz.css",0,"El cambio nace en el espacio de trabajo; Git lo detecta, pero todavía no lo guardará."],["git add interfaz.css",1,"Ahora la versión actual del archivo está preparada para el próximo commit."],["git commit -m \"Mejora interfaz\"",2,"El commit convierte los cambios preparados en una instantánea del historial."]], distractors:["git push origin main","git branch interfaz"] },
+  { title:"Construir sin romper main", type:"Simula una rama", scenario:"Desarrolla un buscador de forma aislada y solo intégralo cuando esté listo.", nodes:[["●","main","Versión estable"],["⑂","feature/buscador","Trabajo aislado"],["⋈","main","Función integrada"]], steps:[["git branch feature/buscador",0,"La rama nace apuntando al mismo commit que main."],["git switch feature/buscador",1,"HEAD cambia a la rama de trabajo; main queda quieta."],["git commit -m \"Añade buscador\"",1,"El nuevo commit avanza feature/buscador, no main."],["git switch main && git merge feature/buscador",2,"Desde main se integra la historia de la rama terminada."]], distractors:["git push --force","git reset --hard"] },
+  { title:"Conectar local y origin", type:"Mueve la historia", scenario:"Tienes commits en tu computador y un repositorio vacío en GitHub. Conéctalos y sincroniza el trabajo.", nodes:[["⌂","Repositorio local","Tu computador"],["◎","origin","URL de GitHub"],["♙","Otro colaborador","Otra copia local"]], steps:[["git remote add origin URL",0,"Guardaste la URL bajo el apodo origin. Todavía no enviaste ningún commit."],["git push -u origin main",1,"Los commits locales viajan hacia origin y main queda conectada con origin/main."],["git pull origin main",2,"Pull trae e integra los commits remotos en la copia local del colaborador."]], distractors:["git init origin","git commit origin"] },
+  { title:"Proteger trabajo incompleto", type:"Elige sin perder datos", scenario:"Debes pausar una tarea experimental, atender una urgencia y después dejar el archivo limpio.", nodes:[["±","Cambio","Sin preparar"],["▣","Stash","Trabajo resguardado"],["↶","Restaurado","Árbol limpio"]], steps:[["git diff experimento.js",0,"Primero inspeccionas exactamente qué cambiaría; consultar no modifica nada."],["git stash",1,"El trabajo queda temporalmente resguardado y el árbol vuelve a estar limpio."],["git restore config.js",2,"Restore descarta una modificación que decidiste no conservar."]], distractors:["git reset --hard HEAD","git push"] },
+  { title:"Cirugía segura de historia", type:"Escoge la herramienta", scenario:"Publica una versión, corrige un cambio compartido y localiza una referencia aparentemente perdida.", nodes:[["◇","Versión estable","Referencia v1.0"],["↩","Corrección pública","Historia conservada"],["⌕","Rastro local","Commit recuperable"]], steps:[["git tag v1.0.0",0,"El tag fija un nombre estable en el commit de la versión publicada."],["git revert HEAD",1,"Revert crea un commit inverso sin borrar la historia que otros ya recibieron."],["git reflog",2,"Reflog revela movimientos locales aunque el commit no aparezca en git log."]], distractors:["git delete HEAD","git reset --hard origin"] },
+  { title:"Cazar una regresión", type:"Reduce la búsqueda", scenario:"Entre una versión buena y HEAD apareció un error. Usa búsqueda binaria para encontrar el primer commit defectuoso.", nodes:[["↔","Todo el rango","Muchos commits"],["½","Mitad del rango","Cada vez menos"],["⌖","Commit culpable","Causa localizada"]], steps:[["git bisect start",0,"Git entra en modo de búsqueda binaria."],["git bisect bad HEAD",1,"Definiste el extremo donde el error sí existe."],["git bisect good v1.0.0",2,"Con un extremo bueno y otro malo, Git empieza a probar commits intermedios."],["git bisect reset",2,"Al terminar regresas a la rama y posición originales."]], distractors:["git merge --bisect","git blame --delete"] }
+];
+
 const freshWorld = () => ({
   repo: false, files: [], staged: [], commits: [], branches: ["main"], currentBranch: "main",
   merged: [], remotes: {}, pushed: false, conflict: false, conflictResolved: false, rebased: false,
@@ -305,6 +314,9 @@ let soundOn = saved.soundOn !== false;
 let modalMode = "success";
 let practiceMode = false;
 let guideIndex = 0;
+let masteredLabs = saved.masteredLabs || [];
+let labChapter = -1;
+let labStep = 0;
 
 const $ = selector => document.querySelector(selector);
 const els = {
@@ -321,7 +333,9 @@ const els = {
   commandWizard: $("#commandWizard"), guideList: $("#guideList"), guideSearch: $("#guideSearch"), guideCounter: $("#guideCounter"),
   guideCategory: $("#guideCategory"), guideCommand: $("#guideCommand"), guideSummary: $("#guideSummary"), guideSyntax: $("#guideSyntax"),
   guideExampleTitle: $("#guideExampleTitle"), guideExampleText: $("#guideExampleText"), guideExampleCode: $("#guideExampleCode"),
-  guideNote: $("#guideNote"), guidePrev: $("#guidePrev"), guideNext: $("#guideNext"), guideDots: $("#guideDots")
+  guideNote: $("#guideNote"), guidePrev: $("#guidePrev"), guideNext: $("#guideNext"), guideDots: $("#guideDots"),
+  labTitle: $("#labTitle"), labType: $("#labType"), labScenario: $("#labScenario"), masteryBadge: $("#masteryBadge"),
+  labBoard: $("#labBoard"), labDropzone: $("#labDropzone"), labActions: $("#labActions"), labFeedback: $("#labFeedback")
 };
 
 function normalizeWorld(data) {
@@ -334,7 +348,7 @@ function loadProgress() {
 }
 
 function saveProgress() {
-  localStorage.setItem("gitOdysseyProgress", JSON.stringify({ completed, xp, currentMission, world, soundOn }));
+  localStorage.setItem("gitOdysseyProgress", JSON.stringify({ completed, xp, currentMission, world, soundOn, masteredLabs }));
 }
 
 function escapeHtml(value) {
@@ -692,6 +706,9 @@ function resetGame() {
   selectedChapter = 0;
   world = freshWorld();
   practiceMode = false;
+  masteredLabs = [];
+  labChapter = -1;
+  labStep = 0;
   modalMode = "success";
   els.modal.hidden = true;
   $("#practiceButton").textContent = "Abrir";
@@ -715,7 +732,55 @@ function closeModal(advance = false) {
 }
 
 function renderAll() {
-  renderMission(); renderStats(); renderMap(); renderChapterButtons(); renderGraph(); renderLevelNavigation();
+  renderMission(); renderStats(); renderMap(); renderChapterButtons(); renderGraph(); renderLevelNavigation(); renderLab();
+}
+
+function renderLab(feedback = "") {
+  if (labChapter !== selectedChapter) {
+    labChapter = selectedChapter;
+    labStep = masteredLabs.includes(labChapter) ? learningLabs[labChapter].steps.length : 0;
+  }
+  const lab = learningLabs[labChapter];
+  const finished = labStep >= lab.steps.length;
+  const passedTargets = lab.steps.slice(0, labStep).map(step => step[1]);
+  const activeTarget = finished ? -1 : lab.steps[labStep][1];
+  els.labTitle.textContent = lab.title;
+  els.labType.textContent = lab.type.toUpperCase();
+  els.labScenario.textContent = lab.scenario;
+  els.masteryBadge.classList.toggle("mastered", masteredLabs.includes(labChapter));
+  els.masteryBadge.innerHTML = masteredLabs.includes(labChapter) ? "<span>◆</span><b>Concepto dominado</b>" : "<span>◇</span><b>Concepto por dominar</b>";
+  els.labBoard.innerHTML = lab.nodes.map((node,index) => `<div class="lab-node ${passedTargets.includes(index) ? "complete" : index === activeTarget ? "active" : ""}"><i>${escapeHtml(node[0])}</i><b>${escapeHtml(node[1])}</b><small>${escapeHtml(node[2])}</small></div>`).join("");
+  const used = lab.steps.slice(0,labStep).map(step => step[0]);
+  const actions = [...lab.steps.map(step => step[0]), ...lab.distractors];
+  els.labActions.innerHTML = actions.map(action => `<button class="lab-action ${used.includes(action) ? "used" : ""}" draggable="${!used.includes(action)}" data-lab-action="${escapeHtml(action)}">${escapeHtml(action)}</button>`).join("");
+  els.labActions.querySelectorAll(".lab-action:not(.used)").forEach(button => {
+    button.addEventListener("click", () => attemptLabAction(button.dataset.labAction, button));
+    button.addEventListener("dragstart", event => { event.dataTransfer.setData("text/plain", button.dataset.labAction); event.dataTransfer.effectAllowed = "move"; });
+  });
+  els.labFeedback.className = `lab-feedback ${finished || feedback ? "success" : ""}`;
+  els.labFeedback.textContent = feedback || (finished ? "Laboratorio completado. Ya no solo conoces los comandos: comprendes cómo transforman el estado de Git." : `Paso ${labStep + 1} de ${lab.steps.length}: decide qué acción corresponde ahora.`);
+  els.labDropzone.innerHTML = finished ? "<span>✓</span><p>Secuencia completada</p>" : "<span>+</span><p>Ejecutar la siguiente acción aquí</p>";
+}
+
+function attemptLabAction(action, button) {
+  const lab = learningLabs[labChapter];
+  if (labStep >= lab.steps.length) return;
+  const expected = lab.steps[labStep];
+  if (action !== expected[0]) {
+    button?.classList.add("wrong");
+    setTimeout(() => button?.classList.remove("wrong"), 450);
+    els.labFeedback.className = "lab-feedback error";
+    els.labFeedback.textContent = `Esa acción todavía no corresponde. Observa el estado resaltado y piensa qué debe existir antes de ejecutar «${action}».`;
+    errorTone();
+    return;
+  }
+  labStep += 1;
+  if (labStep >= lab.steps.length && !masteredLabs.includes(labChapter)) {
+    masteredLabs.push(labChapter);
+    saveProgress();
+    successTone();
+  } else tone(540,.08);
+  renderLab(expected[2]);
 }
 
 function furthestUnlockedMission() {
@@ -912,6 +977,16 @@ els.commandWizard.addEventListener("click", event => { if (event.target === els.
 els.guideSearch.addEventListener("input", renderGuideList);
 els.guidePrev.addEventListener("click", () => { if (guideIndex > 0) { guideIndex -= 1; renderGuide(); renderGuideList(); } });
 els.guideNext.addEventListener("click", () => { if (guideIndex < commandGuide.length - 1) { guideIndex += 1; renderGuide(); renderGuideList(); } });
+$("#labReset").addEventListener("click", () => { labChapter = selectedChapter; labStep = 0; renderLab("Laboratorio reiniciado. Construye nuevamente la secuencia desde el principio."); });
+els.labDropzone.addEventListener("dragover", event => { event.preventDefault(); els.labDropzone.classList.add("dragover"); });
+els.labDropzone.addEventListener("dragleave", () => els.labDropzone.classList.remove("dragover"));
+els.labDropzone.addEventListener("drop", event => {
+  event.preventDefault();
+  els.labDropzone.classList.remove("dragover");
+  const action = event.dataTransfer.getData("text/plain");
+  const button = [...els.labActions.querySelectorAll(".lab-action")].find(item => item.dataset.labAction === action);
+  if (action) attemptLabAction(action, button);
+});
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !els.commandWizard.hidden) closeGuide();
